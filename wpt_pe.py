@@ -2,6 +2,7 @@
 import tornado.ioloop
 import tornado.web
 import httplib,urllib
+import operator
 
 WPT_PVT_HOST='www.webpagetest.org'
 
@@ -64,21 +65,23 @@ class LatInfo(tornado.web.RequestHandler):
                 '270ms' : 270,
                 '300ms' : 300
         }
+	sorted_lats = sorted(lats.items(), key=operator.itemgetter(1))
+
         browser = 'Chrome'
         testids = []
-        for lat in lats:
+        for (k,v) in sorted_lats:
             form_fields = {
                 "url": url,
                     "browser": browser,
                     "location": "gpu_wptdriver"+":"+browser+".Custom",
                     "ignoreSSL":1,
                     "runs": "3",
-                    "latency" : lats[lat],
+                    "latency" : v,
                     "bwDown" : 50000,
                     "bwUp" : 10000,
                     "fvonly": "1",
                     "video": "1",
-                    "label": lat,
+                    "label": k,
                     "keepua": 1
             }
             form_data = urllib.urlencode(form_fields)
@@ -107,21 +110,22 @@ class NetInfo(tornado.web.RequestHandler):
                 '9Mbps' : 9000,
                 '10Mbps' : 10000
         }
+	sorted_nets = sorted(nets.items(), key=operator.itemgetter(1))
         browser = 'Chrome'
         testids = []
-        for net in nets:
+        for (k,v) in sorted_nets:
             form_fields = {
                     "url": url,
                     "browser": browser,
                     "location": "gpu_wptdriver"+":"+browser+".Custom",
                     "ignoreSSL":1,
                     "runs": "3",
-                    "bwDown" : nets[net],
+                    "bwDown" : v,
                     "bwUp" : 10000,
                     "latency" : 0,
                     "fvonly": "1",
                     "video": "1",
-                    "label": net,
+                    "label": k,
                     "keepua": 1
             }
             form_data = urllib.urlencode(form_fields)
@@ -142,12 +146,12 @@ class CPUInfo(tornado.web.RequestHandler):
 		'cpu_1' : '1 vCPU',
                 'cpu_2' : '2 vCPUs',
                 'cpu_4' : '4 vCPUs',
-                'cpu_8' : '8 vCPUs',
-                'gpu' : 'GPU'
+                'cpu_8' : '8 vCPUs'
         }
         browser = 'Chrome'
         testids = []
-        for cpu in cpus:
+	sorted_cpus = sorted(cpus.items(), key=operator.itemgetter(1))
+        for (cpu,label) in sorted_cpus:
             form_fields = {
                 "url": url,
                     "browser": browser,
@@ -156,7 +160,7 @@ class CPUInfo(tornado.web.RequestHandler):
                     "runs": "3",
                     "fvonly": "1",
                     "video": "1",
-                    "label": cpus[cpu],
+                    "label": label,
                     "keepua": 1
             }
             form_data = urllib.urlencode(form_fields)
@@ -174,7 +178,7 @@ class BroInfo(tornado.web.RequestHandler):
         url = self.get_argument('url')
         browsers = ['Firefox', 'IE 11','Chrome']
         testids = []
-        for browser in browsers:
+        for browser in sorted(browsers):
             form_fields = {
                     "url": url,
                     "browser": browser,
